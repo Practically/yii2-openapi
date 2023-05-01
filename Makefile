@@ -10,7 +10,7 @@ check-style:
 	vendor/bin/php-cs-fixer fix --diff --dry-run
 
 check-style-from-host:
-	docker-compose run --rm php sh -c 'vendor/bin/php-cs-fixer fix --diff --dry-run'
+	docker compose run --rm php sh -c 'vendor/bin/php-cs-fixer fix --diff --dry-run'
 
 fix-style:
 	vendor/bin/indent --tabs composer.json
@@ -24,7 +24,7 @@ test:
 	php $(PHPARGS) vendor/bin/phpunit
 
 clean_all:
-	docker-compose down
+	docker compose down
 	sudo rm -rf tests/tmp/*
 
 clean:
@@ -32,30 +32,30 @@ clean:
 	sudo rm -rf tests/tmp/docker_app/*
 
 down:
-	docker-compose down --remove-orphans
+	docker compose down --remove-orphans
 
 up:
-	docker-compose up -d
+	docker compose up -d
 	echo "Waiting for mariadb to start up..."
-	docker-compose exec -T mysql timeout 60s sh -c "while ! (mysql -udbuser -pdbpass -h maria --execute 'SELECT 1;' > /dev/null 2>&1); do echo -n '.'; sleep 0.1 ; done; echo 'ok'" || (docker-compose ps; docker-compose logs; exit 1)
+	docker compose exec -T mysql timeout 60s sh -c "while ! (mysql -udbuser -pdbpass -h maria --execute 'SELECT 1;' > /dev/null 2>&1); do echo -n '.'; sleep 0.1 ; done; echo 'ok'" || (docker compose ps; docker compose logs; exit 1)
 
 	# Solution to problem https://stackoverflow.com/questions/50026939/php-mysqli-connect-authentication-method-unknown-to-the-client-caching-sha2-pa
 	# if updated to PHP 7.4 or more, this command is not needed (TODO)
-	docker-compose exec -T mysql timeout 60s sh -c "while ! (mysql --execute \"ALTER USER 'dbuser'@'%' IDENTIFIED WITH mysql_native_password BY 'dbpass';\" > /dev/null 2>&1); do echo -n '.'; sleep 0.1 ; done; echo 'ok'" || (docker-compose ps; docker-compose logs; exit 1)
+	docker compose exec -T mysql timeout 60s sh -c "while ! (mysql --execute \"ALTER USER 'dbuser'@'%' IDENTIFIED WITH mysql_native_password BY 'dbpass';\" > /dev/null 2>&1); do echo -n '.'; sleep 0.1 ; done; echo 'ok'" || (docker compose ps; docker compose logs; exit 1)
 
 cli:
-	docker-compose exec --user=$(UID) php bash
+	docker compose exec --user=$(UID) php bash
 
 migrate:
-	docker-compose run --user=$(UID) --rm php sh -c 'mkdir -p "tests/tmp/app"'
-	docker-compose run --user=$(UID) --rm php sh -c 'mkdir -p "tests/tmp/docker_app"'
-	docker-compose run --user=$(UID) --rm php sh -c 'cd /app/tests && ./yii migrate  --interactive=0'
+	docker compose run --user=$(UID) --rm php sh -c 'mkdir -p "tests/tmp/app"'
+	docker compose run --user=$(UID) --rm php sh -c 'mkdir -p "tests/tmp/docker_app"'
+	docker compose run --user=$(UID) --rm php sh -c 'cd /app/tests && ./yii migrate  --interactive=0'
 
 installdocker:
-	docker-compose run --user=$(UID) --rm php composer install && chmod +x tests/yii
+	docker compose run --user=$(UID) --rm php composer install && chmod +x tests/yii
 
 testdocker:
-	docker-compose run --user=$(UID) --rm php sh -c 'vendor/bin/phpunit'
+	docker compose run --user=$(UID) --rm php sh -c 'vendor/bin/phpunit'
 
 efs: clean_all up migrate # Everything From Scratch
 
