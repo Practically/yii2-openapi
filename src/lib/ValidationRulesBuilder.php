@@ -227,7 +227,7 @@ class ValidationRulesBuilder
             ) {
                 continue;
             }
-            if ($attribute->defaultValue === null && $attribute->isRequired()) {
+            if ($attribute->defaultValue === null && ($attribute->isRequired() || !$attribute->nullable)) {
                 $this->typeScope['required'][$attribute->columnName] = $attribute->columnName;
             }
 
