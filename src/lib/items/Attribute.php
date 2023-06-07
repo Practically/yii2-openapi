@@ -112,6 +112,15 @@ class Attribute extends BaseObject
     public $enumValues;
 
     /**
+     * Human-readable labels for the enum values.
+     *
+     * The keys in this array must be the enum values for proper mapping.
+     *
+     * @var string[]
+     */
+    public $enumLabels = [];
+
+    /**
      * @var string|null
      **/
     public $fakerStub;
@@ -194,6 +203,17 @@ class Attribute extends BaseObject
     public function setEnumValues(array $values):Attribute
     {
         $this->enumValues = $values;
+        return $this;
+    }
+
+    /**
+     * Set the array of human-readable enum labels.
+     *
+     * @param array $labels The keys must be the enum values for proper mapping.
+     */
+    public function setEnumLabels(array $labels): Attribute
+    {
+        $this->enumLabels = $labels;
         return $this;
     }
 
@@ -288,7 +308,7 @@ class Attribute extends BaseObject
     {
         $column = new ColumnSchema([
             'name' => $this->columnName,
-            'phpType'=> $this->phpType,
+            'phpType' => $this->phpType,
             'dbType' => strtolower($this->dbType),
             'type' => $this->yiiAbstractTypeForDbSpecificType($this->dbType),
             'allowNull' => $this->allowNull(),
