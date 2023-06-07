@@ -45,9 +45,10 @@ class ResponseSchema
 
     protected static function schemaNameByRef($schemaOrReference): ?string
     {
-//        if($schemaOrReference instanceof Reference){
-//            $schemaOrReference->resolve();
-//        }
+        if ($schemaOrReference instanceof Schema) {
+            return null;
+        }
+
         $ref = $schemaOrReference->getJsonReference()->getJsonPointer()->getPointer();
         $name = strpos($ref, '/components/schemas/') === 0 ? substr($ref, 20) : null;
         return str_replace(JunctionSchemas::PREFIX, '', $name);
