@@ -206,6 +206,7 @@ class AttributeResolver
      */
     protected function resolveProperty(PropertySchema $property, bool $isRequired):void
     {
+        /** @var Attribute */
         $attribute = Yii::createObject(Attribute::class, [$property->getName()]);
         $attribute->setRequired($isRequired)
                   ->setDescription($property->getAttr('description', ''))
@@ -219,7 +220,7 @@ class AttributeResolver
             if ($property->isVirtual()) {
                 throw new InvalidDefinitionException('References not supported for virtual attributes');
             }
-            
+
             if ($property->isNonDbReference()) {
                 $attribute->asNonDbReference($property->getRefClassName());
                 $relation = Yii::createObject(
@@ -269,7 +270,12 @@ class AttributeResolver
                       ->setDbType($property->guessDbType())
                       ->setSize($property->getMaxLength())
                       ->setLimits($min, $max, $property->getMinLength());
+
             if ($property->hasEnum()) {
+                if ($property->hasAttr('x-enum-labels')) {
+                    $attribute->setEnumLabels($property->getAttr('x-enum-labels'));
+                }
+
                 $attribute->setEnumValues($property->getAttr('enum'));
             }
         }

@@ -111,7 +111,7 @@ You can generate non-db model based on \yii\base\Model without migrations by set
 
 ### `x-pk`
 
-Explicitly specify primary key name for table, if it is different from "id" 
+Explicitly specify primary key name for table, if it is different from "id"
 
 ```yaml
     Post:
@@ -173,7 +173,7 @@ Specify table indexes
         metadata:
            type: object
            x-db-type: JSON
-           default: '{}' 
+           default: '{}'
 ```
 
 ### `x-db-default-expression`
@@ -249,6 +249,51 @@ Allow to set foreign key constraint in migrations for ON DELETE event of row in 
 
 Allow to set foreign key constraint in migrations for ON UPDATE event of row in database table. For example, see above section for `x-fk-on-delete`.
 
+### `x-enum-labels`
+
+Map human-readable labels to enum values, which become a static array on the generated model. This can be useful for listing available enum options or data validation.
+
+```yaml
+  components:
+    schemas:
+      User:
+        type: object
+        properties:
+          id:
+            type: integer
+          status:
+            type: string
+            enum:
+              - Active
+              - Inactive
+            x-enum-labels:
+              Active: This user can login
+              Inactive: This user is blocked from logging in
+```
+
+With the above example, the following code is generated:
+
+```php
+// models/base/User.php
+abstract class User extends \yii\db\ActiveRecord
+{
+
+    public const STATUS_ACTIVE = 'Active';
+    public const STATUS_INACTIVE = 'Inactive';
+
+    /**
+     * Human-readable labels for the `$status` enum
+     *
+     * @var array<array-key, string>
+     */
+    public static array $centreTypes = [
+        self::STATUS_ACTIVE => 'This user can login',
+        self::STATUS_INACTIVE => 'This user is blocked from logging in',
+    ];
+
+}
+```
+
 ## Many-to-Many relation definition
 
 There are two ways for define many-to-many relations:
@@ -256,14 +301,14 @@ There are two ways for define many-to-many relations:
 ### Simple many-to-many without junction model
 
    - property name for many-to-many relation should be equal lower-cased, pluralized related schema name
-     
+
    - referenced schema should contains mirrored reference to current schema
-     
+
    - migration for junction table can be generated automatically - table name should be [pluralized, lower-cased
  schema_name1]2[pluralized, lower-cased schema name2], in alphabetical order;
  For example, for schemas Post and Tag - table should be posts2tags, for schemas Post and Attachement - table should
   be attachments2posts
-  
+
 ```
 Post:
   properties:
@@ -281,16 +326,16 @@ Tag:
       items:
         $ref: '#/components/schemas/Post'
 ```
-  
+
 ### Many-to-many with junction model
 
-This way allowed creating multiple many-to-many relations between to models 
+This way allowed creating multiple many-to-many relations between to models
 
 - define junction schema with all necessary attributes. There are only one important requirement - the junction
  schema name
  must be started with prefix 'junction_' (This prefix will be used internally only and
  will be trimmed before table and model generation)
- 
+
 ```
 # Model TeamMembers with table team_members will be generated with columns team_id, user_id and role
 junction_TeamMembers:
@@ -302,7 +347,7 @@ junction_TeamMembers:
      type: string
 ```
 - Both many-to-many related schemas must have properties with reference to "junction_*" schema. These properties will be
- used as relation names 
+ used as relation names
 
 ```
 Team:
@@ -321,9 +366,9 @@ User:
       items:
         $ref: '#/components/schemas/junction_TeamMembers'
 ```
-  
+
  - see both examples here [tests/specs/many2many.yaml](tests/specs/many2many.yaml)
- 
+
 
 ## Handling of `NOT NULL` constraints
 
@@ -387,6 +432,8 @@ It works on all 3 DB: MySQL, MariaDb and PgSQL.
 ```
 
 Note: Change in enum values are not very simple. For Mysql and Mariadb, migrations will be generated but in many cases custom modification in it are required. For Pgsql migrations for change in enum values will not be generated. It should be handled manually.
+
+Enum properties will generate PHP constants in the generated model.
 
 ## Handling of `numeric` (#numeric, #MariaDb)
 

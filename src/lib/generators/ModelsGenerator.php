@@ -9,8 +9,6 @@ namespace cebe\yii2openapi\lib\generators;
 
 use cebe\yii2openapi\lib\CodeFiles;
 use cebe\yii2openapi\lib\Config;
-use Laminas\Code\Generator\ClassGenerator;
-use Laminas\Code\Generator\FileGenerator;
 use Yii;
 use yii\gii\CodeFile;
 
@@ -97,17 +95,16 @@ class ModelsGenerator
 
             // only generate custom classes if they do not exist, do not override
             if (!file_exists(Yii::getAlias("$modelPath/$className.php"))) {
-                $classFileGenerator = new FileGenerator();
-                $reflection = new ClassGenerator(
-                    $className,
-                    $this->config->modelNamespace,
-                    null,
-                    $this->config->modelNamespace . '\\base\\' . $className
-                );
-                $classFileGenerator->setClasses([$reflection]);
                 $this->files->add(new CodeFile(
                     Yii::getAlias("$modelPath/$className.php"),
-                    $classFileGenerator->generate()
+                    $this->config->render(
+                        'custommodel.php',
+                        [
+                            'model' => $model,
+                            'namespace' => $this->config->modelNamespace,
+                            'extends' => $this->config->modelNamespace.'\\base\\'.$className,
+                        ]
+                    )
                 ));
             }
         }

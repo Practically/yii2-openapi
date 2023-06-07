@@ -45,6 +45,27 @@ namespace <?= $namespace ?>;
  */
 abstract class <?= $model->getClassName() ?> extends \yii\db\ActiveRecord
 {
+<?php if (count($model->getEnumAttributes())) : ?>
+<?php foreach ($model->getEnumAttributes() as $attributeName => $attribute) : ?>
+<?php foreach ($attribute->enumValues as $enumValue) : ?>
+    public const <?= strtoupper($attributeName) ?>_<?= strtoupper(Inflector::slug($enumValue, '_', false)) ?> = '<?= $enumValue ?>';
+<?php endforeach; ?>
+
+<?php if (count($attribute->enumLabels)) : ?>
+    /**
+     * Human-readable labels for the `$<?= $attributeName ?>` enum
+     *
+     * @var array<array-key, string>
+     */
+    public static array $<?= lcfirst(Inflector::pluralize(Inflector::camelize($attributeName))) ?> = [
+<?php foreach ($attribute->enumLabels as $enumValue => $enumLabel) : ?>
+        self::<?= strtoupper($attributeName) ?>_<?= strtoupper(Inflector::slug($enumValue, '_', false)) ?> => '<?= $enumLabel ?>',
+<?php endforeach; ?>
+    ];
+
+<?php endif; ?>
+<?php endforeach; ?>
+<?php endif; ?>
 <?php if (count($model->virtualAttributes())):?>
     protected $virtualAttributes = ['<?=implode("', '", array_map(function ($attr) {
     return $attr->columnName;
