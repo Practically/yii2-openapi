@@ -391,6 +391,9 @@ class ApiGenerator extends Generator
             }
             $required[] = 'controller.php';
         }
+        if ($this->generateModels || $this->generateModelsOnlyXTable) {
+            $required[] = 'custommodel.php';
+        }
         if ($this->generateModels) {
             $required[] = 'dbmodel.php';
         }
