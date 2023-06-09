@@ -8,6 +8,7 @@
 namespace cebe\yii2openapi\lib\items;
 
 use cebe\openapi\spec\PathItem;
+use cebe\openapi\spec\Reference;
 use yii\base\BaseObject;
 use yii\base\InvalidCallException;
 use yii\helpers\ArrayHelper;
@@ -179,7 +180,18 @@ final class RouteData extends BaseObject
         $this->detectUrlPattern();
 
         $patternParts = $this->parts;
-        $pathParameters = ArrayHelper::index($this->pathItem->parameters, 'name');
+
+        $pathParameters = [];
+
+        foreach ($this->pathItem->parameters as $parameter) {
+            if ($parameter instanceof Reference) {
+                $pathParameters[] = $parameter->resolve();
+            } else {
+                $pathParameters[] = $parameter;
+            }
+        }
+
+        $pathParameters = ArrayHelper::index($pathParameters, 'name');
         foreach ($this->parts as $p => $part) {
             if ($part === 'relationships' || !preg_match(self::PATTERN_PARAM, $part, $m)) {
                 continue;
