@@ -63,6 +63,7 @@ class ModelsGenerator
                             'model' => $model,
                             'namespace' => $this->config->modelNamespace . '\\base',
                             'relationNamespace' => $this->config->modelNamespace,
+                            'generateConstantsForEnums' => $this->config->generateConstantsForEnums,
                         ]
                     )
                 ));
