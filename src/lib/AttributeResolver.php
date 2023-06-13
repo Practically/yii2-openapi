@@ -407,6 +407,10 @@ class AttributeResolver
      */
     protected function prepareIndexes(array $indexes):array
     {
+        $relationColumns = array_map(
+            static fn (AttributeRelation $relation): string => $relation->getColumnName(),
+            $this->relations
+        );
         $dbIndexes = [];
         foreach ($indexes as $index) {
             $unique = false;
@@ -423,11 +427,14 @@ class AttributeResolver
             $props = array_map('trim', explode(',', trim($props)));
             $columns = [];
             foreach ($props as $prop) {
-                if (!isset($this->attributes[$prop])) {
+                if (isset($this->attributes[$prop])) {
+                    $columns[] = $this->attributes[$prop]->columnName;
+                } elseif (in_array($prop, $relationColumns)) {
+                    $columns[] = $prop;
+                } else {
                     throw new InvalidDefinitionException('Invalid index definition - property ' . $prop
-                        . ' not declared');
+                    . ' not declared');
                 }
-                $columns[] = $this->attributes[$prop]->columnName;
             }
             $dbIndex = DbIndex::make($this->tableName, $columns, $indexType, $unique);
             $dbIndexes[$dbIndex->name] = $dbIndex;
