@@ -159,6 +159,11 @@ class ApiGenerator extends Generator
     public $generateMigrations = true;
 
     /**
+     * @var bool whether to generate PHP constants for enum values in models.
+     */
+    public $generateConstantsForEnums = false;
+
+    /**
      * @var string path to create migration files in.
      * Defaults to `@app/migrations`.
      */
