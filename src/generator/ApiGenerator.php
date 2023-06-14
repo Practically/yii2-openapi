@@ -394,6 +394,7 @@ class ApiGenerator extends Generator
                 $required[] = 'controller_jsonapi.php';
                 $required[] = 'transformer.php';
             }
+            $required[] = 'customcontroller.php';
             $required[] = 'controller.php';
         }
         if ($this->generateModels || $this->generateModelsOnlyXTable) {
