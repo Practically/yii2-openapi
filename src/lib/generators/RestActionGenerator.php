@@ -11,6 +11,7 @@ use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\PathItem;
 use cebe\openapi\spec\Reference;
 use cebe\yii2openapi\lib\Config;
+use cebe\yii2openapi\lib\items\ActionTemplates;
 use cebe\yii2openapi\lib\items\RestAction;
 use cebe\yii2openapi\lib\items\RouteData;
 use cebe\yii2openapi\lib\openapi\ResponseSchema;
@@ -109,6 +110,10 @@ class RestActionGenerator
         } else {
             $controllerId = $routeData->controller;
         }
+
+        /** @var ActionTemplates */
+        $actionTemplates = Yii::createObject($this->config->actionTemplatesClass);
+
         return Yii::createObject(RestAction::class, [
             [
                 'id' => trim("$actionType{$routeData->action}", '-'),
@@ -124,7 +129,8 @@ class RestActionGenerator
                     : null,
                 'responseWrapper' => $responseWrapper,
                 'prefix' => $routeData->getPrefix(),
-                'prefixSettings' => $routeData->getPrefixSettings()
+                'prefixSettings' => $routeData->getPrefixSettings(),
+                'actionTemplates' => $actionTemplates,
             ],
         ]);
     }

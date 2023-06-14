@@ -151,6 +151,17 @@ class Config extends BaseObject
      */
     public $migrationNamespace;
 
+    /**
+     * @var string Class to use for `ActionTemplates`.
+     *
+     * This class contains methods for generating action templates, and can be
+     * overridden to customise these templates.
+     *
+     * Overridden action templates classes must extend
+     * `\cebe\yii2openapi\lib\items\ActionTemplates`.
+     */
+    public $actionTemplatesClass = '\cebe\yii2openapi\lib\items\ActionTemplates';
+
     private $fileRenderer;
 
     /**
