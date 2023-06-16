@@ -213,13 +213,13 @@ class AttributeResolver
                   ->setDefault($property->guessDefault())
                   ->setXDbType($property->getAttr(CustomSpecAttr::DB_TYPE))
                   ->setXDbDefaultExpression($property->getAttr(CustomSpecAttr::DB_DEFAULT_EXPRESSION))
-                  ->setNullable($property->getProperty()->getSerializableData()->nullable ?? null)
+                  ->setNullable($property->isNullable())
                   ->setIsPrimary($property->isPrimaryKey());
         if ($property->isReference()) {
             if ($property->isVirtual()) {
                 throw new InvalidDefinitionException('References not supported for virtual attributes');
             }
-            
+
             if ($property->isNonDbReference()) {
                 $attribute->asNonDbReference($property->getRefClassName());
                 $relation = Yii::createObject(
