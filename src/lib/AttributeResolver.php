@@ -120,6 +120,7 @@ class AttributeResolver
                 //For valid primary keys for junction tables
                 'junctionCols' => $this->isJunctionSchema ? $this->junctions->junctionCols($this->schemaName) : [],
                 'isNotDb' => $this->schema->isNonDb(),
+                'config' => $this->config,
             ],
         ]);
     }
