@@ -114,9 +114,21 @@ class RestActionGenerator
         /** @var ActionTemplates */
         $actionTemplates = Yii::createObject($this->config->actionTemplatesClass);
 
+        $actionId = $routeData->action;
+
+        try {
+            $prepend = $operation->__get('x-action-method-prepend');
+        } catch (\cebe\openapi\exceptions\UnknownPropertyException $e) {
+            $prepend = true;
+        }
+
+        if ($prepend !== false) {
+            $actionId = "$actionType{$routeData->action}";
+        }
+
         return Yii::createObject(RestAction::class, [
             [
-                'id' => trim("$actionType{$routeData->action}", '-'),
+                'id' => trim($actionId, '-'),
                 'controllerId' => $controllerId,
                 'urlPath' => $routeData->path,
                 'requestMethod' => strtoupper($method),
