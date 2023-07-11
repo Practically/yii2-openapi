@@ -23,14 +23,14 @@ class ValidationRulesBuilder
     /**
      * @var \cebe\yii2openapi\lib\items\DbModel
      */
-    private $model;
+    protected $model;
 
     /**
      * @var array|ValidationRule[]
      */
-    private $rules = [];
+    protected $rules = [];
 
-    private $typeScope = [
+    protected $typeScope = [
         'required' => [],
         'ref' => [],
         'trim' => [],
@@ -80,13 +80,13 @@ class ValidationRulesBuilder
         return $this->rules;
     }
 
-    private function addUniqueRule(array $columns):void
+    protected function addUniqueRule(array $columns):void
     {
         $params = count($columns) > 1 ? ['targetAttribute' => $columns] : [];
         $this->rules[implode('_', $columns) . '_unique'] = new ValidationRule($columns, 'unique', $params);
     }
 
-    private function resolveAttributeRules(Attribute $attribute):void
+    protected function resolveAttributeRules(Attribute $attribute):void
     {
         if ($attribute->isReadOnly()) {
             return;
@@ -134,7 +134,7 @@ class ValidationRulesBuilder
         $this->addRulesByAttributeName($attribute);
     }
 
-    private function addRulesByAttributeName(Attribute $attribute):void
+    protected function addRulesByAttributeName(Attribute $attribute):void
     {
         //@TODO: probably also patterns for file, image
         $patterns = [
@@ -153,7 +153,7 @@ class ValidationRulesBuilder
     /**
      * @param array|Attribute[] $relations
      */
-    private function addExistRules(array $relations):void
+    protected function addExistRules(array $relations):void
     {
         foreach ($relations as $attribute) {
             if ($attribute->phpType === 'int' || $attribute->phpType === 'integer') {
@@ -169,7 +169,7 @@ class ValidationRulesBuilder
         }
     }
 
-    private function addStringRule(Attribute $attribute):void
+    protected function addStringRule(Attribute $attribute):void
     {
         $params = [];
         if ($attribute->maxLength === $attribute->minLength && $attribute->minLength !== null) {
@@ -186,7 +186,7 @@ class ValidationRulesBuilder
         $this->rules[$key] = new ValidationRule([$attribute->columnName], 'string', $params);
     }
 
-    private function defaultRule(Attribute $attribute):void
+    protected function defaultRule(Attribute $attribute):void
     {
         if ($attribute->defaultValue === null) {
             return;
@@ -201,7 +201,7 @@ class ValidationRulesBuilder
         $this->rules[$key] = new ValidationRule([$attribute->columnName], 'default', $params);
     }
 
-    private function addNumericRule(Attribute $attribute):void
+    protected function addNumericRule(Attribute $attribute):void
     {
         $params = [];
         if ($attribute->limits['min'] !== null) {
@@ -215,7 +215,7 @@ class ValidationRulesBuilder
         $this->rules[$key] = new ValidationRule([$attribute->columnName], $validator, $params);
     }
 
-    private function prepareTypeScope():void
+    protected function prepareTypeScope():void
     {
         foreach ($this->model->attributes as $attribute) {
             if ($attribute->isReadOnly()) {

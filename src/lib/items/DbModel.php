@@ -76,6 +76,11 @@ class DbModel extends BaseObject
 
     public $isNotDb = false;
 
+    /**
+     * @var \cebe\yii2openapi\lib\Config
+     */
+    public $config;
+
     public function getTableAlias():string
     {
         return '{{%' . $this->tableName . '}}';
@@ -88,7 +93,10 @@ class DbModel extends BaseObject
 
     public function getValidationRules():string
     {
-        $rules = Yii::createObject(ValidationRulesBuilder::class, [$this])->build();
+        $rules = Yii::createObject(
+            $this->config->validationRulesBuilderClass,
+            [$this]
+        )->build();
         $rules = array_map('strval', $rules);
         $rules = VarDumper::export($rules);
         return str_replace([

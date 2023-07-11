@@ -187,6 +187,16 @@ class ApiGenerator extends Generator
     public $actionTemplatesClass = '\cebe\yii2openapi\lib\items\ActionTemplates';
 
     /**
+     * @var string Class to use for `ValidationRulesBuilder`.
+     *
+     * This class contains methods for generating model validation rules.
+     *
+     * Overridden action templates classes must extend
+     * `\cebe\yii2openapi\lib\ValidationRulesBuilder`.
+     */
+    public $validationRulesBuilderClass = '\cebe\yii2openapi\lib\ValidationRulesBuilder';
+
+    /**
      * @var OpenApi
      */
     private $_openApiWithoutRef;
