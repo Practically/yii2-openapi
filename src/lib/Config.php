@@ -110,6 +110,16 @@ class Config extends BaseObject
     public $excludeModels = [];
 
     /**
+     * @var array List of column names which are never dropped in database
+     * migrations, even if they aren't included in the OpenAPI definition.
+     *
+     * This is useful for "hidden" properties; columns that you want in the
+     * database and your extended models, but you don't want to have them
+     * appear in your OpenAPI definition.
+     */
+    public $neverDropColumns = [];
+
+    /**
      * @var array Map for custom controller names not based on model name for exclusive cases
      * @example
      *  'controllerModelMap' => [
