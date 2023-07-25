@@ -9,6 +9,7 @@ namespace cebe\yii2openapi\lib\migrations;
 
 use cebe\yii2openapi\generator\ApiGenerator;
 use cebe\yii2openapi\lib\ColumnToCode;
+use cebe\yii2openapi\lib\Config;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
 use cebe\yii2openapi\lib\items\MigrationModel;
@@ -22,6 +23,11 @@ abstract class BaseMigrationBuilder
 {
     public const POS_FIRST = 'FIRST';
     public const POS_AFTER = 'AFTER';
+
+    /**
+     * @var \cebe\yii2openapi\lib\Config
+     */
+    protected $config;
 
     /**
      * @var \yii\db\Connection
@@ -60,8 +66,9 @@ abstract class BaseMigrationBuilder
      * @throws \yii\base\InvalidConfigException
      * @throws \yii\base\NotSupportedException
      */
-    public function __construct(Connection $db, DbModel $model)
+    public function __construct(Connection $db, DbModel $model, Config $config)
     {
+        $this->config = $config;
         $this->db = $db;
         $this->model = $model;
         $this->tableSchema = $db->getTableSchema($model->getTableAlias(), true);
@@ -179,6 +186,20 @@ abstract class BaseMigrationBuilder
             },
             array_diff($wantNames, $haveNames)
         );
+
+        /**
+         * Filter out columns that we want to prevent dropping, as defined
+         * in `ApiGenerator::$neverDropColumns`.
+         */
+        if (array_key_exists($this->model->name, $this->config->neverDropColumns)) {
+            $haveNames = array_filter(
+                $haveNames,
+                fn (string $columnName): bool => !in_array(
+                    $columnName,
+                    $this->config->neverDropColumns[$this->model->name]
+                )
+            );
+        }
 
         $columnsForDrop = array_map(
             function (string $unknownColumn) {
