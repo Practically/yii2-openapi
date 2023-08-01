@@ -114,7 +114,11 @@ class RestActionGenerator
         /** @var ActionTemplates */
         $actionTemplates = Yii::createObject($this->config->actionTemplatesClass);
 
-        $actionId = $routeData->action;
+        try {
+            $actionId = $operation->__get('x-use-operation-id-for-action') ? Inflector::camel2id($operation->operationId) : $routeData->action;
+        } catch (\cebe\openapi\exceptions\UnknownPropertyException $e) {
+            $actionId = $routeData->action;
+        }
 
         try {
             $prepend = $operation->__get('x-action-method-prepend');
