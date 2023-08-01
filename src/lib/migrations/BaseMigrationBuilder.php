@@ -299,10 +299,26 @@ abstract class BaseMigrationBuilder
     protected function buildIndexChanges():void
     {
         $haveIndexes = $this->findTableIndexes();
+
+        /**
+         * Filter out indexes that we want to prevent dropping, as defined by
+         * column names in `ApiGenerator::$neverDropColumns`.
+         */
+        if (array_key_exists($this->model->name, $this->config->neverDropColumns)) {
+            $haveIndexes = array_filter(
+                $haveIndexes,
+                fn (\cebe\yii2openapi\lib\items\DbIndex $index): bool => count(array_intersect(
+                    $index->columns,
+                    $this->config->neverDropColumns[$this->model->name]
+                )) === 0
+            );
+        }
+
         $wantIndexes = $this->model->indexes;
         $wantIndexNames = array_column($wantIndexes, 'name');
         $haveIndexNames = array_column($haveIndexes, 'name');
         $tableName = $this->model->getTableAlias();
+
         /**@var \cebe\yii2openapi\lib\items\DbIndex[] $forDrop */
         $forDrop = array_map(
             function ($idx) use ($haveIndexes) {
