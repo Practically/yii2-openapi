@@ -89,6 +89,10 @@ class PropertySchema
         $this->isPk = $name === $schema->getPkName();
         $this->isNullable = $property->nullable ?? false;
 
+        if (!empty($property->{'x-fk-nullable'})) {
+            $this->isNullable = $property->{'x-fk-nullable'};
+        }
+
         $onUpdate = $onDelete = $reference = null;
 
         foreach ($property->allOf ?? [] as $element) {
@@ -105,6 +109,16 @@ class PropertySchema
                 $reference = $element;
             }
         }
+
+        if ($onUpdate === null || $onDelete === null) {
+            if (!empty($property->{CustomSpecAttr::FK_ON_UPDATE})) {
+                $onUpdate = $property->{CustomSpecAttr::FK_ON_UPDATE};
+            }
+            if (!empty($property->{CustomSpecAttr::FK_ON_DELETE})) {
+                $onDelete = $property->{CustomSpecAttr::FK_ON_DELETE};
+            }
+        }
+
         if (
             ($onUpdate !== null || $onDelete !== null) &&
             ($reference instanceof Reference)
