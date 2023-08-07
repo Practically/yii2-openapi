@@ -253,6 +253,12 @@ Allow to set foreign key constraint in migrations for ON UPDATE event of row in 
 
 Use on a path. This extension, when set to `true`, forces the generator to use the `operationId` as the action ID for that path.
 
+### `x-fk-nullable`
+
+Some OpenAPI generators don't generate inline schemas correctly if additional properties are specified.
+
+You can set `x-fk-nullable` to tell the Yii generator to make the foreign key column nullable, working around the limitation set by other generators.
+
 ## Many-to-Many relation definition
 
 There are two ways for define many-to-many relations:
