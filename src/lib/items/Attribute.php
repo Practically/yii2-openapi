@@ -121,6 +121,11 @@ class Attribute extends BaseObject
      **/
     public $isVirtual = false;
 
+    /**
+     * @var string|null
+     */
+    public $format;
+
     public function __construct(string $propertyName, array $config = [])
     {
         $this->propertyName = $propertyName;
@@ -227,6 +232,11 @@ class Attribute extends BaseObject
         return $this;
     }
 
+    public function setFormat(?string $format = null): Attribute
+    {
+        $this->format = $format;
+        return $this;
+    }
 
     public function asReference(string $relatedClass):Attribute
     {
