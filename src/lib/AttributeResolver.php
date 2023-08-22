@@ -215,7 +215,8 @@ class AttributeResolver
                   ->setXDbType($property->getAttr(CustomSpecAttr::DB_TYPE))
                   ->setXDbDefaultExpression($property->getAttr(CustomSpecAttr::DB_DEFAULT_EXPRESSION))
                   ->setNullable($property->isNullable())
-                  ->setIsPrimary($property->isPrimaryKey());
+                  ->setIsPrimary($property->isPrimaryKey())
+                  ->setFormat($property->getAttr('format'));
         if ($property->isReference()) {
             if ($property->isVirtual()) {
                 throw new InvalidDefinitionException('References not supported for virtual attributes');
