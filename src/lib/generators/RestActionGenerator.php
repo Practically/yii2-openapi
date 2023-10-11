@@ -130,6 +130,16 @@ class RestActionGenerator
             $actionId = "$actionType{$routeData->action}";
         }
 
+        try {
+            $modelClassOverride = $operation->__get('x-model-class');
+        } catch (\cebe\openapi\exceptions\UnknownPropertyException $e) {
+            $modelClassOverride = null;
+        }
+
+        if ($modelClassOverride !== null) {
+            $modelClass = $modelClassOverride;
+        }
+
         return Yii::createObject(RestAction::class, [
             [
                 'id' => trim($actionId, '-'),
