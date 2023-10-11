@@ -191,12 +191,17 @@ abstract class BaseMigrationBuilder
          * Filter out columns that we want to prevent dropping, as defined
          * in `ApiGenerator::$neverDropColumns`.
          */
-        if (array_key_exists($this->model->name, $this->config->neverDropColumns)) {
+        if (array_key_exists($this->model->name, $this->config->neverDropColumns) ||
+            array_key_exists('*', $this->config->neverDropColumns)
+        ) {
             $haveNames = array_filter(
                 $haveNames,
                 fn (string $columnName): bool => !in_array(
                     $columnName,
-                    $this->config->neverDropColumns[$this->model->name]
+                    array_merge(
+                        $this->config->neverDropColumns[$this->model->name] ?? [],
+                        $this->config->neverDropColumns['*'] ?? []
+                    )
                 )
             );
         }
@@ -304,12 +309,17 @@ abstract class BaseMigrationBuilder
          * Filter out indexes that we want to prevent dropping, as defined by
          * column names in `ApiGenerator::$neverDropColumns`.
          */
-        if (array_key_exists($this->model->name, $this->config->neverDropColumns)) {
+        if (array_key_exists($this->model->name, $this->config->neverDropColumns) ||
+            array_key_exists('*', $this->config->neverDropColumns)
+        ) {
             $haveIndexes = array_filter(
                 $haveIndexes,
                 fn (\cebe\yii2openapi\lib\items\DbIndex $index): bool => count(array_intersect(
                     $index->columns,
-                    $this->config->neverDropColumns[$this->model->name]
+                    array_merge(
+                        $this->config->neverDropColumns[$this->model->name] ?? [],
+                        $this->config->neverDropColumns['*'] ?? []
+                    )
                 )) === 0
             );
         }
