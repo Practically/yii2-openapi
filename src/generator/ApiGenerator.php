@@ -329,7 +329,7 @@ class ApiGenerator extends Generator
             return;
         }
         $config = $this->makeConfig();
-        $openApi = $this->getOpenApiWithoutReferences();
+        $openApi = $this->config->getOpenApi();
         if (!$openApi->validate()) {
             $this->addError($attribute, 'Failed to validate OpenAPI spec:' . Html::ul($openApi->getErrors()));
         }
