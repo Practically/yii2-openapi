@@ -376,6 +376,21 @@ abstract class BaseMigrationBuilder
             $fkCol = $relation[$refCol];
             $existedRelations[$fkName] = ['refTable' => $refTable, 'refCol' => $refCol, 'fkCol' => $fkCol];
         }
+
+        /**
+         * Filter out foreign keys that we want to prevent dropping, as
+         * defined by column names in `ApiGenerator::$neverDropColumns`.
+         */
+        if (array_key_exists($this->model->name, $this->config->neverDropColumns)) {
+            $existedRelations = array_filter(
+                $existedRelations,
+                fn (array $fkDefinition): bool => !in_array(
+                    $fkDefinition['refCol'],
+                    $this->config->neverDropColumns[$this->model->name]
+                )
+            );
+        }
+
         foreach ($this->model->getHasOneRelations() as $relation) {
             $fkCol = $relation->getColumnName();
             $refCol = $relation->getForeignName();
