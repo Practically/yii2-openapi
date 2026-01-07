@@ -107,10 +107,10 @@ class MigrationModel extends BaseObject
     public function makeClassNameByTime(int $index, ?string $nameSpace = null, ?string $date = null):string
     {
         if ($nameSpace) {
-            $m = sprintf('%s%04d', ($date ?: date('ymdH')), $index);
+            $m = sprintf('%s_%04d', ($date ?: date('ymdHis')), $index);
             $this->fileClassName = "M{$m}" . Inflector::id2camel($this->fileName, '_');
         } else {
-            $m = sprintf('%s%04d', ($date ?: date('ymd_H')), $index);
+            $m = sprintf('%s_%04d', ($date ?: date('ymd_His')), $index);
             $this->fileClassName = "m{$m}_" . $this->fileName;
         }
         return $this->fileClassName;

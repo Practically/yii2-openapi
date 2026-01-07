@@ -9,6 +9,7 @@ namespace cebe\yii2openapi\lib\migrations;
 
 use cebe\yii2openapi\generator\ApiGenerator;
 use cebe\yii2openapi\lib\ColumnToCode;
+use cebe\yii2openapi\lib\Config;
 use cebe\yii2openapi\lib\items\DbModel;
 use cebe\yii2openapi\lib\items\ManyToManyRelation;
 use cebe\yii2openapi\lib\items\MigrationModel;
@@ -22,6 +23,11 @@ abstract class BaseMigrationBuilder
 {
     public const POS_FIRST = 'FIRST';
     public const POS_AFTER = 'AFTER';
+
+    /**
+     * @var \cebe\yii2openapi\lib\Config
+     */
+    protected $config;
 
     /**
      * @var \yii\db\Connection
@@ -60,8 +66,9 @@ abstract class BaseMigrationBuilder
      * @throws \yii\base\InvalidConfigException
      * @throws \yii\base\NotSupportedException
      */
-    public function __construct(Connection $db, DbModel $model)
+    public function __construct(Connection $db, DbModel $model, Config $config)
     {
+        $this->config = $config;
         $this->db = $db;
         $this->model = $model;
         $this->tableSchema = $db->getTableSchema($model->getTableAlias(), true);
@@ -180,6 +187,25 @@ abstract class BaseMigrationBuilder
             array_diff($wantNames, $haveNames)
         );
 
+        /**
+         * Filter out columns that we want to prevent dropping, as defined
+         * in `ApiGenerator::$neverDropColumns`.
+         */
+        if (array_key_exists($this->model->name, $this->config->neverDropColumns) ||
+            array_key_exists('*', $this->config->neverDropColumns)
+        ) {
+            $haveNames = array_filter(
+                $haveNames,
+                fn (string $columnName): bool => !in_array(
+                    $columnName,
+                    array_merge(
+                        $this->config->neverDropColumns[$this->model->name] ?? [],
+                        $this->config->neverDropColumns['*'] ?? []
+                    )
+                )
+            );
+        }
+
         $columnsForDrop = array_map(
             function (string $unknownColumn) {
                 return $this->tableSchema->columns[$unknownColumn];
@@ -278,10 +304,31 @@ abstract class BaseMigrationBuilder
     protected function buildIndexChanges():void
     {
         $haveIndexes = $this->findTableIndexes();
+
+        /**
+         * Filter out indexes that we want to prevent dropping, as defined by
+         * column names in `ApiGenerator::$neverDropColumns`.
+         */
+        if (array_key_exists($this->model->name, $this->config->neverDropColumns) ||
+            array_key_exists('*', $this->config->neverDropColumns)
+        ) {
+            $haveIndexes = array_filter(
+                $haveIndexes,
+                fn (\cebe\yii2openapi\lib\items\DbIndex $index): bool => count(array_intersect(
+                    $index->columns,
+                    array_merge(
+                        $this->config->neverDropColumns[$this->model->name] ?? [],
+                        $this->config->neverDropColumns['*'] ?? []
+                    )
+                )) === 0
+            );
+        }
+
         $wantIndexes = $this->model->indexes;
         $wantIndexNames = array_column($wantIndexes, 'name');
         $haveIndexNames = array_column($haveIndexes, 'name');
         $tableName = $this->model->getTableAlias();
+
         /**@var \cebe\yii2openapi\lib\items\DbIndex[] $forDrop */
         $forDrop = array_map(
             function ($idx) use ($haveIndexes) {
@@ -329,6 +376,21 @@ abstract class BaseMigrationBuilder
             $fkCol = $relation[$refCol];
             $existedRelations[$fkName] = ['refTable' => $refTable, 'refCol' => $refCol, 'fkCol' => $fkCol];
         }
+
+        /**
+         * Filter out foreign keys that we want to prevent dropping, as
+         * defined by column names in `ApiGenerator::$neverDropColumns`.
+         */
+        if (array_key_exists($this->model->name, $this->config->neverDropColumns)) {
+            $existedRelations = array_filter(
+                $existedRelations,
+                fn (array $fkDefinition): bool => !in_array(
+                    $fkDefinition['refCol'],
+                    $this->config->neverDropColumns[$this->model->name]
+                )
+            );
+        }
+
         foreach ($this->model->getHasOneRelations() as $relation) {
             $fkCol = $relation->getColumnName();
             $refCol = $relation->getForeignName();

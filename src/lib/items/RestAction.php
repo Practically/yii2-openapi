@@ -7,6 +7,7 @@
 
 namespace cebe\yii2openapi\lib\items;
 
+use Yii;
 use yii\base\BaseObject;
 use yii\helpers\Inflector;
 use yii\helpers\StringHelper;
@@ -68,6 +69,23 @@ final class RestAction extends BaseObject
      */
     public $responseWrapper;
 
+    /**
+     * @var ActionTemplates
+     */
+    public $actionTemplates;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        if (!$this->actionTemplates) {
+            $this->actionTemplates = Yii::createObject(ActionTemplates::class);
+        }
+    }
+
     public function getRoute():string
     {
         if ($this->prefix && !empty($this->prefixSettings)) {
@@ -121,13 +139,13 @@ final class RestAction extends BaseObject
 
     public function hasTemplate():bool
     {
-        return ActionTemplates::hasTemplate($this->id);
+        return $this->actionTemplates::hasTemplate($this->id);
     }
 
     public function getTemplate():?string
     {
         //@TODO: Model scenarios for create/update actions
-        $template = ActionTemplates::getTemplate($this->id);
+        $template = $this->actionTemplates::getTemplate($this->id);
         if (!$template) {
             return null;
         }
@@ -185,7 +203,7 @@ PHP;
             return false; //Default template action used
         }
 
-        if (!ActionTemplates::hasImplementation($this->id)) {
+        if (!$this->actionTemplates::hasImplementation($this->id)) {
             return true;
         }
 
@@ -194,7 +212,7 @@ PHP;
 
     public function getImplementation():?string
     {
-        $template = ActionTemplates::getTemplate($this->id);
+        $template = $this->actionTemplates::getTemplate($this->id);
         return strtr(
             $template['implementation'],
             [
@@ -212,6 +230,6 @@ PHP;
 
     public function shouldUseCustomFindModel():bool
     {
-        return ActionTemplates::hasImplementation($this->id) && !$this->hasStandardId();
+        return $this->actionTemplates::hasImplementation($this->id) && !$this->hasStandardId();
     }
 }

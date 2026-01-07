@@ -110,6 +110,16 @@ class Config extends BaseObject
     public $excludeModels = [];
 
     /**
+     * @var array List of column names which are never dropped in database
+     * migrations, even if they aren't included in the OpenAPI definition.
+     *
+     * This is useful for "hidden" properties; columns that you want in the
+     * database and your extended models, but you don't want to have them
+     * appear in your OpenAPI definition.
+     */
+    public $neverDropColumns = [];
+
+    /**
      * @var array Map for custom controller names not based on model name for exclusive cases
      * @example
      *  'controllerModelMap' => [
@@ -135,6 +145,11 @@ class Config extends BaseObject
     public $generateMigrations = true;
 
     /**
+     * @var bool whether to generate PHP constants for enum values in models.
+     */
+    public $generateConstantsForEnums = false;
+
+    /**
      * @var string path to create migration files in.
      * Defaults to `@app/migrations`.
      */
@@ -145,6 +160,27 @@ class Config extends BaseObject
      * Defaults to `null` which means that migrations are generated without namespace.
      */
     public $migrationNamespace;
+
+    /**
+     * @var string Class to use for `ActionTemplates`.
+     *
+     * This class contains methods for generating action templates, and can be
+     * overridden to customise these templates.
+     *
+     * Overridden action templates classes must extend
+     * `\cebe\yii2openapi\lib\items\ActionTemplates`.
+     */
+    public $actionTemplatesClass = '\cebe\yii2openapi\lib\items\ActionTemplates';
+
+    /**
+     * @var string Class to use for `ValidationRulesBuilder`.
+     *
+     * This class contains methods for generating model validation rules.
+     *
+     * Overridden action templates classes must extend
+     * `\cebe\yii2openapi\lib\ValidationRulesBuilder`.
+     */
+    public $validationRulesBuilderClass = '\cebe\yii2openapi\lib\ValidationRulesBuilder';
 
     private $fileRenderer;
 

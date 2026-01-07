@@ -11,6 +11,7 @@ use cebe\openapi\spec\Operation;
 use cebe\openapi\spec\PathItem;
 use cebe\openapi\spec\Reference;
 use cebe\yii2openapi\lib\Config;
+use cebe\yii2openapi\lib\items\ActionTemplates;
 use cebe\yii2openapi\lib\items\RestAction;
 use cebe\yii2openapi\lib\items\RouteData;
 use cebe\yii2openapi\lib\openapi\ResponseSchema;
@@ -109,9 +110,39 @@ class RestActionGenerator
         } else {
             $controllerId = $routeData->controller;
         }
+
+        /** @var ActionTemplates */
+        $actionTemplates = Yii::createObject($this->config->actionTemplatesClass);
+
+        try {
+            $actionId = $operation->__get('x-use-operation-id-for-action') ? Inflector::camel2id($operation->operationId) : $routeData->action;
+        } catch (\cebe\openapi\exceptions\UnknownPropertyException $e) {
+            $actionId = $routeData->action;
+        }
+
+        try {
+            $prepend = $operation->__get('x-action-method-prepend');
+        } catch (\cebe\openapi\exceptions\UnknownPropertyException $e) {
+            $prepend = true;
+        }
+
+        if ($prepend !== false) {
+            $actionId = "$actionType{$routeData->action}";
+        }
+
+        try {
+            $modelClassOverride = $operation->__get('x-model-class');
+        } catch (\cebe\openapi\exceptions\UnknownPropertyException $e) {
+            $modelClassOverride = null;
+        }
+
+        if ($modelClassOverride !== null) {
+            $modelClass = $modelClassOverride;
+        }
+
         return Yii::createObject(RestAction::class, [
             [
-                'id' => trim("$actionType{$routeData->action}", '-'),
+                'id' => trim($actionId, '-'),
                 'controllerId' => $controllerId,
                 'urlPath' => $routeData->path,
                 'requestMethod' => strtoupper($method),
@@ -124,7 +155,8 @@ class RestActionGenerator
                     : null,
                 'responseWrapper' => $responseWrapper,
                 'prefix' => $routeData->getPrefix(),
-                'prefixSettings' => $routeData->getPrefixSettings()
+                'prefixSettings' => $routeData->getPrefixSettings(),
+                'actionTemplates' => $actionTemplates,
             ],
         ]);
     }

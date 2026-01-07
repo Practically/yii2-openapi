@@ -3,6 +3,7 @@
  * @var \cebe\yii2openapi\lib\items\DbModel $model
  * @var string $namespace
  * @var string $relationNamespace
+ * @var bool $generateConstantsForEnums
  **/
 use yii\helpers\Inflector;
 use yii\helpers\VarDumper;
@@ -45,6 +46,14 @@ namespace <?= $namespace ?>;
  */
 abstract class <?= $model->getClassName() ?> extends \yii\db\ActiveRecord
 {
+<?php if ($generateConstantsForEnums && count($model->getEnumAttributes())) : ?>
+<?php foreach ($model->getEnumAttributes() as $attributeName => $attribute) : ?>
+<?php foreach ($attribute->enumValues as $enumValue) : ?>
+    public const <?= strtoupper($attributeName) ?>_<?= strtoupper(Inflector::slug($enumValue, '_', false)) ?> = '<?= $enumValue ?>';
+<?php endforeach; ?>
+
+<?php endforeach; ?>
+<?php endif; ?>
 <?php if (count($model->virtualAttributes())):?>
     protected $virtualAttributes = ['<?=implode("', '", array_map(function ($attr) {
     return $attr->columnName;

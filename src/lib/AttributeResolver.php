@@ -120,6 +120,7 @@ class AttributeResolver
                 //For valid primary keys for junction tables
                 'junctionCols' => $this->isJunctionSchema ? $this->junctions->junctionCols($this->schemaName) : [],
                 'isNotDb' => $this->schema->isNonDb(),
+                'config' => $this->config,
             ],
         ]);
     }
@@ -213,13 +214,14 @@ class AttributeResolver
                   ->setDefault($property->guessDefault())
                   ->setXDbType($property->getAttr(CustomSpecAttr::DB_TYPE))
                   ->setXDbDefaultExpression($property->getAttr(CustomSpecAttr::DB_DEFAULT_EXPRESSION))
-                  ->setNullable($property->getProperty()->getSerializableData()->nullable ?? null)
-                  ->setIsPrimary($property->isPrimaryKey());
+                  ->setNullable($property->isNullable())
+                  ->setIsPrimary($property->isPrimaryKey())
+                  ->setFormat($property->getAttr('format'));
         if ($property->isReference()) {
             if ($property->isVirtual()) {
                 throw new InvalidDefinitionException('References not supported for virtual attributes');
             }
-            
+
             if ($property->isNonDbReference()) {
                 $attribute->asNonDbReference($property->getRefClassName());
                 $relation = Yii::createObject(
@@ -407,6 +409,10 @@ class AttributeResolver
      */
     protected function prepareIndexes(array $indexes):array
     {
+        $relationColumns = array_map(
+            static fn (AttributeRelation $relation): string => $relation->getColumnName(),
+            $this->relations
+        );
         $dbIndexes = [];
         foreach ($indexes as $index) {
             $unique = false;
@@ -423,11 +429,14 @@ class AttributeResolver
             $props = array_map('trim', explode(',', trim($props)));
             $columns = [];
             foreach ($props as $prop) {
-                if (!isset($this->attributes[$prop])) {
+                if (isset($this->attributes[$prop])) {
+                    $columns[] = $this->attributes[$prop]->columnName;
+                } elseif (in_array($prop, $relationColumns)) {
+                    $columns[] = $prop;
+                } else {
                     throw new InvalidDefinitionException('Invalid index definition - property ' . $prop
-                        . ' not declared');
+                    . ' not declared');
                 }
-                $columns[] = $this->attributes[$prop]->columnName;
             }
             $dbIndex = DbIndex::make($this->tableName, $columns, $indexType, $unique);
             $dbIndexes[$dbIndex->name] = $dbIndex;
